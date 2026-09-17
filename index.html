@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة صَدَقَة | للتبرعات وسقيا الماء والإغاثة</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts (Cairo & Tajawal) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        sadaqah: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                            accent: '#0284c7',
+                            gold: '#f59e0b'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-sadaqah-600 selection:text-white custom-scrollbar min-h-screen flex flex-col justify-between">
+
+    <!-- TOAST NOTIFICATION SYSTEM -->
+    <div id="toast-container" class="fixed top-5 left-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- ================================================================ -->
+    <!-- 1. AUTHENTICATION MODAL / SCREEN (شاشة تسجيل الدخول) -->
+    <!-- ================================================================ -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 transition-all duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 relative overflow-hidden border border-slate-100 animate-float">
+            <!-- Top Water Wave Decorative Background -->
+            <div class="absolute top-0 right-0 left-0 h-3 bg-gradient-to-r from-sadaqah-500 via-sky-500 to-teal-600"></div>
+
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-sadaqah-50 text-sadaqah-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl shadow-sm border border-sadaqah-100">
+                    <i class="fa-solid fa-hand-holding-droplet"></i>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-800">منصة صَدَقَة الخَيْرية</h2>
+                <p class="text-slate-500 text-sm mt-1">سجل دخولك أو أنشئ حسابك لتتبع تبرعاتك وصدقاتك الجارية</p>
+            </div>
+
+            <!-- Auth Tabs -->
+            <div class="flex bg-slate-100 p-1 rounded-xl mb-6">
+                <button type="button" id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all bg-white shadow-sm text-sadaqah-700">تسجيل الدخول</button>
+                <button type="button" id="tab-register" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-bold rounded-lg transition-all text-slate-600 hover:text-slate-900">حساب جديد</button>
+            </div>
+
+            <!-- Auth Form -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div id="name-field" class="hidden">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">الاسم الكامل</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-user absolute right-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="user-fullname-input" placeholder="أدخل اسمك الكريم" class="w-full pr-10 pl-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sadaqah-500 focus:border-transparent outline-none transition text-sm bg-slate-50/50">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">رقم الهاتف أو البريد الإلكتروني</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-envelope absolute right-3.5 top-3.5 text-slate-400"></i>
+                        <input type="text" id="user-contact-input" required placeholder="مثال: 0912345678 أو email@domain.com" class="w-full pr-10 pl-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sadaqah-500 focus:border-transparent outline-none transition text-sm bg-slate-50/50">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">كلمة المرور</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute right-3.5 top-3.5 text-slate-400"></i>
+                        <input type="password" id="user-password-input" required placeholder="••••••••" class="w-full pr-10 pl-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-sadaqah-500 focus:border-transparent outline-none transition text-sm bg-slate-50/50">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked class="rounded text-sadaqah-600 focus:ring-sadaqah-500">
+                        <span>تذكرني على هذا الجهاز</span>
+                    </label>
+                    <a href="#" onclick="showToast('نسيت كلمة المرور؟', 'يرجى التواصل مع الدعم الفني للاسترجاع.', 'info'); return false;" class="text-sadaqah-600 font-bold hover:underline">نسيت كلمة المرور؟</a>
+                </div>
+
+                <button type="submit" id="auth-submit-btn" class="w-full bg-gradient-to-r from-sadaqah-600 to-sky-600 hover:from-sadaqah-700 hover:to-sky-700 text-white font-extrabold py-3.5 rounded-xl shadow-lg hover:shadow-sadaqah-500/30 transition duration-300 flex items-center justify-center gap-2 text-base">
+                    <span>دخول المنصة</span>
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                </button>
+            </form>
+
+            <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-xs text-slate-400">أو قم بالتجربة السريعة:</span>
+                <button type="button" onclick="quickDemoLogin()" class="text-xs font-bold text-sadaqah-700 bg-sadaqah-50 hover:bg-sadaqah-100 px-3 py-1.5 rounded-lg border border-sadaqah-200 transition">
+                    <i class="fa-solid fa-bolt text-sadaqah-gold ml-1"></i> دخول سريع كـ زائر
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- 2. WAJEHA MAIN WEBSITE (الواجهة الرئيسية للموقع) -->
+    <!-- ================================================================ -->
+    <div id="main-app" class="hidden min-h-screen flex flex-col justify-between">
+
+        <!-- HEADER -->
+        <header class="sticky top-0 z-40 glass-header border-b border-slate-100 shadow-sm transition-all duration-300">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                
+                <!-- Logo -->
+                <a href="#hero" class="flex items-center gap-3 group">
+                    <div class="w-11 h-11 bg-gradient-to-tr from-sadaqah-600 to-sky-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-md group-hover:scale-105 transition duration-300">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-black bg-gradient-to-r from-sadaqah-700 via-teal-700 to-sky-700 bg-clip-text text-transparent">صَدَقَة</span>
+                        <span class="block text-[10px] text-slate-400 font-bold tracking-wider -mt-1">لِلسُّقْيَا وَالإِغَاثَةِ</span>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden lg:flex items-center gap-8 font-bold text-slate-600 text-sm">
+                    <a href="#hero" class="hover:text-sadaqah-600 transition flex items-center gap-1.5"><i class="fa-solid fa-house text-xs"></i> الرئيسية</a>
+                    <a href="#projects" class="hover:text-sadaqah-600 transition flex items-center gap-1.5"><i class="fa-solid fa-hand-holding-heart text-xs"></i> المشاريع</a>
+                    <a href="#donate-section" class="hover:text-sadaqah-600 transition flex items-center gap-1.5"><i class="fa-solid fa-credit-card text-xs"></i> تبرع الآن</a>
+                    <a href="#calculator" class="hover:text-sadaqah-600 transition flex items-center gap-1.5"><i class="fa-solid fa-calculator text-xs"></i> حاسبة الزكاة</a>
+                    <a href="#impact" class="hover:text-sadaqah-600 transition flex items-center gap-1.5"><i class="fa-solid fa-chart-line text-xs"></i> الأثر والإحصائيات</a>
+                </nav>
+
+                <!-- User Profile & Quick Donate Actions -->
+                <div class="hidden sm:flex items-center gap-4">
+                    <div class="flex items-center gap-2.5 bg-slate-100/80 p-1.5 pr-3 rounded-full border border-slate-200">
+                        <div class="w-8 h-8 bg-sadaqah-600 text-white rounded-full flex items-center justify-center font-bold text-xs" id="user-avatar-initials">
+                            ز
+                        </div>
+                        <span id="user-display-name" class="text-xs font-bold text-slate-700 max-w-[120px] truncate">زائر الكريم</span>
+                        <button onclick="logoutUser()" title="تسجيل الخروج" class="w-7 h-7 rounded-full bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition shadow-sm">
+                            <i class="fa-solid fa-power-off text-xs"></i>
+                        </button>
+                    </div>
+
+                    <a href="#donate-section" class="bg-gradient-to-r from-sadaqah-600 to-sky-600 hover:from-sadaqah-700 hover:to-sky-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-md hover:shadow-sadaqah-500/30 transition flex items-center gap-2">
+                        <i class="fa-solid fa-heart text-rose-300"></i>
+                        <span>تبرع سريع</span>
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Hamburger Button -->
+                <div class="flex items-center gap-2 lg:hidden">
+                    <a href="#donate-section" class="sm:hidden bg-sadaqah-600 text-white text-xs font-bold px-3 py-2 rounded-lg">تبرع</a>
+                    <button onclick="toggleMobileDrawer()" class="text-slate-700 hover:text-sadaqah-600 text-2xl p-2 rounded-xl focus:outline-none" aria-label="القائمة الجانبية">
+                        <i class="fa-solid fa-bars-staggered"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MOBILE NAVIGATION DRAWER (القائمة الجانبية في الهواتف) -->
+        <div id="mobile-drawer" class="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 ease-in-out lg:hidden">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleMobileDrawer()"></div>
+            
+            <div class="relative w-4/5 max-w-xs bg-white h-full shadow-2xl p-6 flex flex-col justify-between mr-auto">
+                <div>
+                    <!-- Drawer Header -->
+                    <div class="flex items-center justify-between pb-4 mb-6 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 bg-sadaqah-600 text-white rounded-xl flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-droplet"></i>
+                            </div>
+                            <div>
+                                <span class="font-extrabold text-lg text-slate-800">منصة صَدَقَة</span>
+                                <span class="block text-[10px] text-slate-400">للتبرعات الخيرية</span>
+                            </div>
+                        </div>
+                        <button onclick="toggleMobileDrawer()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:text-slate-800 flex items-center justify-center">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+
+                    <!-- User Mobile Info -->
+                    <div class="bg-sadaqah-50 p-3.5 rounded-2xl border border-sadaqah-100 mb-6 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-sadaqah-600 text-white rounded-xl flex items-center justify-center font-bold text-sm" id="mobile-avatar-initials">
+                            ز
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="text-xs text-sadaqah-800 font-bold" id="mobile-user-name">زائر منصة صدقة</div>
+                            <div class="text-[11px] text-sadaqah-600 truncate">تقبل الله طاعاتكم</div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <nav class="flex flex-col gap-2 font-bold text-slate-700 text-sm">
+                        <a href="#hero" onclick="toggleMobileDrawer()" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 transition">
+                            <i class="fa-solid fa-house text-sadaqah-600 w-5"></i> الرئيسية
+                        </a>
+                        <a href="#projects" onclick="toggleMobileDrawer()" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 transition">
+                            <i class="fa-solid fa-hand-holding-heart text-sadaqah-600 w-5"></i> مشاريع التبرع
+                        </a>
+                        <a href="#donate-section" onclick="toggleMobileDrawer()" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 transition">
+                            <i class="fa-solid fa-credit-card text-sadaqah-600 w-5"></i> تبرع الآن
+                        </a>
+                        <a href="#calculator" onclick="toggleMobileDrawer()" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 transition">
+                            <i class="fa-solid fa-calculator text-sadaqah-600 w-5"></i> حاسبة الزكاة
+                        </a>
+                        <a href="#impact" onclick="toggleMobileDrawer()" class="p-3 hover:bg-slate-50 rounded-xl flex items-center gap-3 transition">
+                            <i class="fa-solid fa-chart-line text-sadaqah-600 w-5"></i> الأثر والإحصائيات
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Drawer Bottom -->
+                <div class="border-t border-slate-100 pt-4 space-y-3">
+                    <a href="#donate-section" onclick="toggleMobileDrawer()" class="w-full bg-gradient-to-r from-sadaqah-600 to-sky-600 text-white block text-center py-3 rounded-xl font-extrabold shadow-md">
+                        <i class="fa-solid fa-heart ml-1"></i> تبرع الآن
+                    </a>
+                    <button onclick="logoutUser()" class="w-full bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-600 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition">
+                        <i class="fa-solid fa-power-off"></i> تسجيل الخروج
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- 3. HERO SECTION (القسم التشجيعي للتبرع) -->
+        <!-- ================================================================ -->
+        <section id="hero" class="relative bg-slate-900 text-white py-16 lg:py-24 overflow-hidden">
+            <!-- Background Image with Dark Blue & Teal Gradient Overlay -->
+            <div class="absolute inset-0 z-0">
+                <img src="https://images.unsplash.com/photo-1541544741938-0af808871cc0?q=80&w=1600" alt="سقيا الماء وحفر الآبار" class="w-full h-full object-cover opacity-25">
+                <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/95 to-teal-950/80"></div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid lg:grid-cols-12 gap-12 items-center">
+                
+                <!-- Hero Left / Content -->
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-right">
+                    <div class="inline-flex items-center gap-2 bg-sadaqah-500/20 text-sadaqah-100 border border-sadaqah-400/30 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold backdrop-blur-md">
+                        <i class="fa-solid fa-quote-right text-sadaqah-gold"></i>
+                        <span>قال رسول الله ﷺ: "أَفْضَلُ الصَّدَقَةِ سَقْيُ الْمَاءِ"</span>
+                    </div>
+                    
+                    <h1 class="text-3xl sm:text-5xl font-black leading-tight sm:leading-tight">
+                        اقضِ على العَطَشْ.. <br>
+                        <span class="bg-gradient-to-r from-sky-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">بِقَطْرَةِ مَاءٍ تَبْنِي حَيَاةً وَأَثَراً يَدُومُ</span>
+                    </h1>
+
+                    <p class="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl">
+                        في الكثير من القرى والمناطق المتعففة، يقطع الأطفال والنساء مسافات طويلة جثيمة للحصول على مياه شرب طاهرة. تبرعك اليوم بـ **سقيا الماء** أو **حفر الآبار** أو **إطعام المساكين** ينقذ أرواحاً ويجري لك أجراً لا ينقطع.
+                    </p>
+
+                    <!-- CTAs & Fast Actions -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
+                        <a href="#donate-section" class="bg-gradient-to-r from-sadaqah-500 to-sky-600 hover:from-sadaqah-600 hover:to-sky-700 text-white px-8 py-4 rounded-2xl font-black text-lg shadow-xl hover:shadow-sadaqah-500/30 transition duration-300 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-hand-holding-droplet"></i>
+                            <span>تبرع بسقيا الماء الآن</span>
+                        </a>
+                        <a href="#projects" class="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-4 rounded-2xl font-bold text-base backdrop-blur-md transition flex items-center justify-center gap-2">
+                            <span>استكشف الآبار والمشاريع</span>
+                            <i class="fa-solid fa-arrow-left text-xs"></i>
+                        </a>
+                    </div>
+
+                    <!-- Quick Live Stats Ticker -->
+                    <div class="pt-6 border-t border-slate-800 grid grid-cols-3 gap-4 text-center lg:text-right">
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-black text-sadaqah-100">184+</div>
+                            <div class="text-xs text-slate-400 font-semibold">بئر تم حفره</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-black text-sky-300">2.4M+</div>
+                            <div class="text-xs text-slate-400 font-semibold">لتر مياه توفرت</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl sm:text-3xl font-black text-emerald-300">95,000+</div>
+                            <div class="text-xs text-slate-400 font-semibold">مستفيد ومستفيدة</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Right / Encouraging Image Card -->
+                <div class="lg:col-span-5">
+                    <div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10 group">
+                        <img src="https://images.unsplash.com/photo-1578357078586-491adf1aa5ab?q=80&w=1000" alt="تبرع بسقيا الماء والأثر" class="w-full h-[400px] sm:h-[460px] object-cover group-hover:scale-105 transition duration-700">
+                        
+                        <!-- Overlay Glass Badge -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent flex flex-col justify-end p-6">
+                            <div class="bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-white/10 text-right">
+                                <div class="flex items-center gap-2 text-sadaqah-gold font-bold text-xs mb-1">
+                                    <i class="fa-solid fa-star"></i> مشروع عاجل
+                                </div>
+                                <h3 class="font-extrabold text-lg text-white">مشروع حفر بئر ارتوازي قرية الأمل</h3>
+                                <p class="text-xs text-slate-300 mt-1">ساهم بفرصة وصول المياه النقية لـ 1,200 نسمة في أشد الحاجة.</p>
+                                
+                                <div class="mt-3 bg-slate-800 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-sadaqah-500 to-sky-400 h-full w-[78%] rounded-full"></div>
+                                </div>
+                                <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5 font-bold">
+                                    <span>تم جمع: 78%</span>
+                                    <span class="text-sadaqah-100">المتبقي: 22%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIVE DONOR TICKER BAR -->
+        <div class="bg-sadaqah-900 text-sadaqah-100 py-3 border-y border-sadaqah-800 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 flex items-center gap-4 text-xs font-semibold">
+                <span class="bg-sadaqah-600 text-white px-2.5 py-1 rounded-md text-[11px] font-extrabold shrink-0 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> مباشر
+                </span>
+                <div class="overflow-hidden whitespace-nowrap w-full">
+                    <div class="inline-block animate-pulse-slow">
+                        <span class="mx-4"><i class="fa-solid fa-heart text-rose-400 ml-1"></i> فاعل خير تبرع بـ 10,000 ج.س لـ "سقيا الماء - صهاريج" (قبل دقيقة)</span>
+                        <span class="text-sadaqah-600">|</span>
+                        <span class="mx-4"><i class="fa-solid fa-heart text-rose-400 ml-1"></i> د. أحمد م. تبرع بـ 50,000 ج.س لـ "مشروع حفر الآبار" (قبل 5 دقائق)</span>
+                        <span class="text-sadaqah-600">|</span>
+                        <span class="mx-4"><i class="fa-solid fa-heart text-rose-400 ml-1"></i> أم عبد الله تبرعت بـ 25,000 ج.س لـ "إطعام المساكين" (قبل 12 دقيقة)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- 4. PROJECTS CARDS SECTION (مشاريع التبرع والسقيا) -->
+        <!-- ================================================================ -->
+        <section id="projects" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12 space-y-3">
+                <span class="bg-sadaqah-100 text-sadaqah-700 font-extrabold px-3.5 py-1.5 rounded-full text-xs">مشاريع الأثر الخالد</span>
+                <h2 class="text-3xl font-black text-slate-800">أبواب الخير بين يديك</h2>
+                <p class="text-slate-500 text-sm">اختر المشروع الأقرب لقلبك وشارف على كسب الأجر العظيم بمساهمتك المباركة</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Project Card 1 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative overflow-hidden h-52">
+                            <img src="https://images.unsplash.com/photo-1541544741938-0af808871cc0?q=80&w=600" alt="سقيا الماء" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-4 right-4 bg-sky-600 text-white text-xs font-black px-3 py-1 rounded-full shadow">سقيا الماء</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">صهاريج وتوزيع مياه الشرب النقية</h3>
+                            <p class="text-slate-500 text-xs leading-relaxed mb-4">تيسير وصول شاحنات المياه الصالحة للشرب للقرياء والمخيمات المفتقرة لشبكات المياه.</p>
+                            
+                            <!-- Progress Bar -->
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-xs font-bold text-slate-600">
+                                    <span>المجموع: 450,000 ج.س</span>
+                                    <span class="text-sadaqah-600">الهدف: 600,000</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-sadaqah-600 h-full rounded-full" style="width: 75%"></div>
+                                </div>
+                                <div class="text-left text-[11px] font-bold text-slate-400">75% مكتمل</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <button onclick="selectProjectForDonation('سقيا الماء - صهاريج')" class="w-full bg-slate-900 hover:bg-sadaqah-600 text-white py-3 rounded-xl font-extrabold text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-droplet text-sky-400"></i>
+                            <span>تخصيص تبرع للمشروع</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative overflow-hidden h-52">
+                            <img src="https://images.unsplash.com/photo-1594398901394-4e34939a440c?q=80&w=600" alt="حفر الآبار" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-4 right-4 bg-sadaqah-600 text-white text-xs font-black px-3 py-1 rounded-full shadow">صدقة جارية</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">حفر وتجهيز آبار المياه الارتوازية</h3>
+                            <p class="text-slate-500 text-xs leading-relaxed mb-4">بناء وتأهيل آبار عميقة تعمل بالطاقة الشمسية لضمان تدفق المياه لسنوات طويلة.</p>
+                            
+                            <!-- Progress Bar -->
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-xs font-bold text-slate-600">
+                                    <span>المجموع: 1,850,000 ج.س</span>
+                                    <span class="text-sadaqah-600">الهدف: 2,500,000</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-sky-500 h-full rounded-full" style="width: 74%"></div>
+                                </div>
+                                <div class="text-left text-[11px] font-bold text-slate-400">74% مكتمل</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <button onclick="selectProjectForDonation('حفر الآبار الارتوازية')" class="w-full bg-slate-900 hover:bg-sadaqah-600 text-white py-3 rounded-xl font-extrabold text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-bore-hole text-amber-400"></i>
+                            <span>تخصيص تبرع للمشروع</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project Card 3 -->
+                <div class="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group">
+                    <div>
+                        <div class="relative overflow-hidden h-52">
+                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=600" alt="تبرع للمساكين" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            <span class="absolute top-4 right-4 bg-emerald-600 text-white text-xs font-black px-3 py-1 rounded-full shadow">إطعام وكفالة</span>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-slate-800 mb-2">السلال الغذائية وكفالة الأسر المتعففة</h3>
+                            <p class="text-slate-500 text-xs leading-relaxed mb-4">توفير الطرود الغذائية الأساسية والأقوات للفقراء والمساكين والأيتام.</p>
+                            
+                            <!-- Progress Bar -->
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between text-xs font-bold text-slate-600">
+                                    <span>المجموع: 920,000 ج.س</span>
+                                    <span class="text-sadaqah-600">الهدف: 1,000,000</span>
+                                </div>
+                                <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-emerald-500 h-full rounded-full" style="width: 92%"></div>
+                                </div>
+                                <div class="text-left text-[11px] font-bold text-slate-400">92% مكتمل</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 pt-0">
+                        <button onclick="selectProjectForDonation('إطعام وسلال غذائية للمساكين')" class="w-full bg-slate-900 hover:bg-sadaqah-600 text-white py-3 rounded-xl font-extrabold text-sm transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-utensils text-emerald-400"></i>
+                            <span>تخصيص تبرع للمشروع</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================================================================ -->
+        <!-- 5. DONATION FORM & PAYMENT OPTIONS (نموذج التبرع وخيارات الدفع) -->
+        <!-- ================================================================ -->
+        <section id="donate-section" class="py-16 bg-gradient-to-b from-slate-100 to-slate-200 border-y border-slate-200">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-slate-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-sadaqah-500/10 rounded-bl-full pointer-events-none"></div>
+
+                    <div class="text-center mb-10 space-y-2">
+                        <span class="inline-block bg-sadaqah-100 text-sadaqah-700 font-extrabold px-3 py-1 rounded-full text-xs">
+                            <i class="fa-solid fa-lock text-xs ml-1"></i> بوابات دفع آمنة ومشفرة 100%
+                        </span>
+                        <h2 class="text-3xl font-black text-slate-800">استمارة التبرع الإلكتروني</h2>
+                        <p class="text-slate-500 text-sm">حدد نوع الصدقة والمبلغ، ثم اختر طريقة الدفع المريحة لك</p>
+                    </div>
+
+                    <form id="donation-form" onsubmit="handleDonationSubmit(event)" class="space-y-8">
+                        
+                        <!-- 1. Select Project -->
+                        <div class="space-y-2">
+                            <label class="block font-bold text-slate-800 text-sm">1. اختر مشروع التبرع</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-hand-holding-heart absolute right-4 top-4 text-sadaqah-600"></i>
+                                <select id="donation-project-select" class="w-full pr-11 pl-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-sadaqah-500 outline-none font-bold text-slate-800 text-sm transition">
+                                    <option value="سقيا الماء - عام">سقيا الماء (عام)</option>
+                                    <option value="سقيا الماء - صهاريج">صهاريج توزيع المياه للقرى</option>
+                                    <option value="حفر الآبار الارتوازية">حفر وتجهيز آبار المياه الارتوازية</option>
+                                    <option value="إطعام وسلال غذائية للمساكين">إطعام المساكين والسلال الغذائية</option>
+                                    <option value="كفالة أيتام ومحتاجين">كفالة الأيتام والأسر المعوزة</option>
+                                    <option value="صدقة عامة وجارية">صدقة عامة وجارية</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 2. Donation Amount Presets & Custom Input -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <label class="block font-bold text-slate-800 text-sm">2. حدد قيمة التبرع</label>
+                                <!-- Currency Toggle -->
+                                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-lg text-xs font-bold">
+                                    <button type="button" onclick="setCurrency('SDG')" id="curr-sdg" class="px-2.5 py-1 rounded-md bg-white text-sadaqah-700 shadow-sm">SDG ج.س</button>
+                                    <button type="button" onclick="setCurrency('EGP')" id="curr-egp" class="px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-800">EGP ج.م</button>
+                                    <button type="button" onclick="setCurrency('USD')" id="curr-usd" class="px-2.5 py-1 rounded-md text-slate-500 hover:text-slate-800">USD $</button>
+                                </div>
+                            </div>
+
+                            <!-- Preset Buttons -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                <button type="button" onclick="selectPresetAmount(2000)" class="amount-btn border-2 border-slate-200 py-3 rounded-2xl font-black hover:border-sadaqah-500 hover:bg-sadaqah-50 transition text-slate-700">
+                                    <span class="val">2,000</span> <span class="curr-label text-xs font-normal">ج.س</span>
+                                </button>
+                                <button type="button" onclick="selectPresetAmount(5000)" class="amount-btn border-2 border-slate-200 py-3 rounded-2xl font-black hover:border-sadaqah-500 hover:bg-sadaqah-50 transition text-slate-700">
+                                    <span class="val">5,000</span> <span class="curr-label text-xs font-normal">ج.س</span>
+                                </button>
+                                <button type="button" onclick="selectPresetAmount(15000)" class="amount-btn border-2 border-slate-200 py-3 rounded-2xl font-black hover:border-sadaqah-500 hover:bg-sadaqah-50 transition text-slate-700">
+                                    <span class="val">15,000</span> <span class="curr-label text-xs font-normal">ج.س</span>
+                                </button>
+                                <button type="button" onclick="selectPresetAmount(50000)" class="amount-btn border-2 border-slate-200 py-3 rounded-2xl font-black hover:border-sadaqah-500 hover:bg-sadaqah-50 transition text-slate-700">
+                                    <span class="val">50,000</span> <span class="curr-label text-xs font-normal">ج.س</span>
+                                </button>
+                            </div>
+
+                            <!-- Custom Amount Field -->
+                            <div class="relative">
+                                <i class="fa-solid fa-coins absolute right-4 top-4 text-slate-400"></i>
+                                <input type="number" id="custom-donation-amount" min="10" required placeholder="أو ادخل مبلغ آخر تحبه..." class="w-full pr-11 pl-16 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-sadaqah-500 outline-none font-bold text-slate-800 text-sm transition">
+                                <span class="absolute left-4 top-3.5 font-black text-slate-400 text-xs" id="custom-curr-display">SDG</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. Payment Methods Grid (بنكك، فوري، أوكاش، ماي كاشي، ساهل، برافو...) -->
+                        <div class="space-y-3">
+                            <label class="block font-bold text-slate-800 text-sm">3. اختر تطبيق / طريقة الدفع</label>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                                
+                                <!-- Bankak (بنكك) -->
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="بنكك (Bankak - بنك الخرطوم)" checked class="peer hidden">
+                                    <div class="p-3.5 border-2 border-slate-200 rounded-2xl text-center peer-checked:border-sadaqah-600 peer-checked:bg-sadaqah-50/80 peer-checked:shadow-md transition flex flex-col items-center justify-center h-24">
+                                        <i class="fa-solid fa-building-columns text-2xl text-red-600 mb-1"></i>
+                                        <div class="font-black text-sm text-slate-800">بنكك</div>
+                                        <div class="text-[10px] text-slate-400 font-semibold">Bankak</div>
+                                    </div>
+                                </label>
+
+                                <!-- Fawry (فوري) -->
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="فوري (Fawry Pay)" class="peer hidden">
+                                    <div class="p-3.5 border-2 border-slate-200 rounded-2xl text-center peer-checked:border-sadaqah-600 peer-checked:bg-sadaqah-50/80 peer-checked:shadow-md transition flex flex-col items-center justify-center h-24">
+                                        <i class="fa-solid fa-bolt text-2xl text-amber-500 mb-1"></i>
+                                        <div class="font-black text-sm text-slate-800">فوري</div>
+                                        <div class="text-[10px] text-slate-400 font-semibold">Fawry</div>
+                                    </div>
+                                </label>
+
+                                <!-- OKash (أوكاش) -->
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="أوكاش (O-Kash)" class="peer hidden">
+                                    <div class="p-3.5 border-2 border-slate-200 rounded-2xl text-center peer-checked:border-sadaqah-600 peer-checked:bg-sadaqah-50/80 peer-checked:shadow-md transition flex flex-col items-center justify-center h-24">
+                                        <i class="fa-solid fa-wallet text-2xl text-sky-600 mb-1"></i>
+                                        <div class="font-black text-sm text-slate-800">أوكاش</div>
+                                        <div class="text-[10px] text-slate-400 font-semibold">O-Kash</div>
+                                    </div>
+                                </label>
+
+                                <!-- MyCashi (ماي كاشي) -->
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="ماي كاشي (MyCashi)" class="peer hidden">
+                                    <div class="p-3.5 border-2 border-slate-200 rounded-2xl text-center peer-checked:border-sadaqah-600 peer-checked:bg-sadaqah-50/80 peer-checked:shadow-md transition flex flex-col items-center justify-center h-24">
+                                        <i class="fa-solid fa-money-bill-transfer text-2xl text-emerald-600 mb-1"></i>
+                                        <div class="font-black text-sm text-slate-800">ماي كاشي</div>
+                                        <div class="text-[10px] text-slate-400 font-semibold">MyCashi</div>
+                                    </div>
+                                </label>
+
+                                <!-- Sahel (ساهل) -->
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="ساهل (Sahel Pay)" class="peer hidden">
+                                    <div class="p-3.5 border-2 border-slate-200 rounded-2xl text-center peer-checked:border-sadaqah-600 peer-checked:bg-sadaqah-50/80 peer-checked:shadow-md transition flex flex-col items-center justify-center h-24">
+                                        <i class="fa-solid fa-mobile-screen text-2xl text-purple-600 mb-1"></i>
+                                        <div class="font-black text-sm text-slate-800">ساهل</div>
+                                        <div class="text-[10px] text-slate-400 font-semibold">Sahel Pay</div>
+                                    </div>
+                                </label>
+
+                                <!-- Bravo (برافو) -->
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="payment_method" value="برافو (Bravo)" class="peer hidden">
+                                    <div class="p-3.5 border-2 border-slate-200 rounded-2xl text-center peer-checked:border-sadaqah-600 peer-checked:bg-sadaqah-50/80 peer-checked:shadow-md transition flex flex-col items-center justify-center h-24">
+                                        <i class="fa-solid fa-credit-card text-2xl text-orange-500 mb-1"></i>
+                                        <div class="font-black text-sm text-slate-800">برافو</div>
+                                        <div class="text-[10px] text-slate-400 font-semibold">Bravo</div>
+                                    </div>
+                                </label>
+
+                            </div>
+                        </div>
+
+                        <!-- Donor Name / Anonymity Option -->
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-bold text-slate-800 text-xs mb-1">اسم المتبرع للإيصال</label>
+                                <input type="text" id="donor-receipt-name" placeholder="الاسم المتبرع به" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block font-bold text-slate-800 text-xs mb-1">إهداء الصدقة / نية التبرع</label>
+                                <input type="text" placeholder="مثال: صدقة جارية عن والدي رحمه الله" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold">
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="w-full bg-gradient-to-r from-sadaqah-600 via-teal-600 to-sky-600 hover:from-sadaqah-700 hover:to-sky-700 text-white font-black py-4 rounded-2xl shadow-xl hover:shadow-sadaqah-500/30 transition duration-300 text-lg flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>تأكيد وإتمام التبرع الآن</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================================================================ -->
+        <!-- 6. ZAKAT CALCULATOR & IMPACT STATS -->
+        <!-- ================================================================ -->
+        <section id="calculator" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-8 items-center">
+                
+                <!-- Calculator Box -->
+                <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-sadaqah-50 text-sadaqah-600 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-calculator"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-800">حاسبة الصدقة والزكاة الذكية</h3>
+                            <p class="text-xs text-slate-500">احسب مقدار زكاتك الواجبة 2.5% بسهولة</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">إجمالي المبلغ أو المال المدخر</label>
+                            <input type="number" id="zakat-amount-input" oninput="calculateZakat()" placeholder="أدخل المبلغ الإجمالي" class="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-slate-800 text-sm">
+                        </div>
+
+                        <div class="bg-sadaqah-50 p-4 rounded-2xl border border-sadaqah-100 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs font-bold text-slate-500 block">مقدار الزكاة الواجب إخراجها (2.5%)</span>
+                                <span class="text-2xl font-black text-sadaqah-700" id="zakat-result">0.00</span>
+                            </div>
+                            <button type="button" onclick="transferZakatToDonation()" class="bg-sadaqah-600 hover:bg-sadaqah-700 text-white px-4 py-2.5 rounded-xl font-extrabold text-xs transition">
+                                تحويل للتبرع فورا
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Impact Stats Box -->
+                <div id="impact" class="lg:col-span-5 bg-gradient-to-br from-slate-900 to-teal-950 text-white p-8 rounded-3xl shadow-xl space-y-6">
+                    <h3 class="text-2xl font-black border-b border-slate-800 pb-3">شفافية وأثر حقيقي</h3>
+                    <p class="text-slate-300 text-xs leading-relaxed">
+                        نلتزم في منصة صَدَقَة بأعلى معايير الشفافية؛ حيث يتم توثيق كافة الآبار ومشاريع سقيا الماء بالصور والفيديوهات وإرسال تقارير دورية للمتبرعين.
+                    </p>
+
+                    <div class="space-y-3 text-xs">
+                        <div class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+                            <i class="fa-solid fa-shield-halved text-emerald-400 text-xl"></i>
+                            <div>
+                                <div class="font-bold text-white">مرخصة وموثوقة</div>
+                                <div class="text-slate-400 text-[11px]">تحت إشراف جهات ومؤسسات خيرية رسمية</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10">
+                            <i class="fa-solid fa-camera-retro text-sky-400 text-xl"></i>
+                            <div>
+                                <div class="font-bold text-white">توثيق بالاسم والصورة</div>
+                                <div class="text-slate-400 text-[11px]">يتم كتابة اسم المتبرع على لوحة البئر وإرسال الفيديو</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================================================================ -->
+        <!-- 7. SUCCESS / PAYMENT RECEIPT MODAL (نافذة تأكيد التبرع) -->
+        <!-- ================================================================ -->
+        <div id="receipt-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 hidden">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 text-center space-y-5 border border-slate-100 animate-float">
+                
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-black text-slate-800">تقبل الله صدقتكم!</h3>
+                    <p class="text-xs text-slate-500 mt-1">تمت عملية التبرع بنجاح، جزاكم الله خيراً وجعلها في ميزان حسناتكم</p>
+                </div>
+
+                <!-- Receipt Details Card -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-2 text-right">
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span class="text-slate-500">رقم العملية:</span>
+                        <span class="font-mono font-bold text-slate-800" id="receipt-ref-no">#SDQ-84920</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span class="text-slate-500">المشروع:</span>
+                        <span class="font-bold text-sadaqah-700" id="receipt-project">سقيا الماء</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-200 pb-2">
+                        <span class="text-slate-500">المبلغ المدفوع:</span>
+                        <span class="font-black text-emerald-600 text-sm" id="receipt-amount">10,000 ج.س</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">وسيلة الدفع:</span>
+                        <span class="font-bold text-slate-800" id="receipt-method">بنكك</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="printReceipt()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">
+                        <i class="fa-solid fa-print ml-1"></i> طباعة الإيصال
+                    </button>
+                    <button type="button" onclick="closeReceiptModal()" class="flex-1 bg-sadaqah-600 hover:bg-sadaqah-700 text-white font-extrabold py-2.5 rounded-xl text-xs transition">
+                        إغلاق
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================ -->
+        <!-- 8. FOOTER (الفوتر الاحترافي) -->
+        <!-- ================================================================ -->
+        <footer class="bg-slate-950 text-slate-400 py-12 border-t border-slate-900 text-xs">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-8">
+                
+                <!-- Col 1: Platform info -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 bg-sadaqah-600 text-white rounded-xl flex items-center justify-center text-xl shadow-md">
+                            <i class="fa-solid fa-droplet"></i>
+                        </div>
+                        <span class="text-2xl font-black text-white">صَدَقَة</span>
+                    </div>
+                    <p class="leading-relaxed text-slate-400">
+                        منصة إلكترونية خيرية متخصصة في جمع التبرعات لسقيا الماء وحفر الآبار ورعاية الفقراء والمساكين بأسلوب عصري وآمن.
+                    </p>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="space-y-3">
+                    <h4 class="text-white font-bold text-sm border-b border-slate-800 pb-2">روابط سريعة</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#hero" class="hover:text-sadaqah-400 transition">الرئيسية</a></li>
+                        <li><a href="#projects" class="hover:text-sadaqah-400 transition">مشاريع الآبار والسقيا</a></li>
+                        <li><a href="#donate-section" class="hover:text-sadaqah-400 transition">التبرع السريع</a></li>
+                        <li><a href="#calculator" class="hover:text-sadaqah-400 transition">حاسبة الزكاة</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Payment Partners -->
+                <div class="space-y-3">
+                    <h4 class="text-white font-bold text-sm border-b border-slate-800 pb-2">وسائل الدفع المعتمدة</h4>
+                    <div class="flex flex-wrap gap-2 font-bold text-[10px]">
+                        <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg">بنكك Bankak</span>
+                        <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg">فوري Fawry</span>
+                        <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg">أوكاش OKash</span>
+                        <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg">ماي كاشي MyCashi</span>
+                        <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg">ساهل Sahel</span>
+                        <span class="bg-slate-900 border border-slate-800 text-slate-300 px-2.5 py-1.5 rounded-lg">برافو Bravo</span>
+                    </div>
+                </div>
+
+                <!-- Col 4: Contact & Social -->
+                <div class="space-y-3">
+                    <h4 class="text-white font-bold text-sm border-b border-slate-800 pb-2">تواصل مع المنصة</h4>
+                    <p class="text-slate-400">للاستفسارات والتقارير الخيرية:</p>
+                    <div class="flex items-center gap-3 text-lg pt-1">
+                        <a href="#" onclick="showToast('واتساب', 'يسعدنا تواصلكم على الرقم: +249912345678', 'info'); return false;" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-emerald-600 text-slate-300 hover:text-white flex items-center justify-center transition"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="#" onclick="showToast('فيسبوك', 'صفحتنا الرسمية: Sadaqah.Official', 'info'); return false;" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-blue-600 text-slate-300 hover:text-white flex items-center justify-center transition"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" onclick="showToast('البريد الإلكتروني', 'info@sadaqah-platform.org', 'info'); return false;" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-sadaqah-600 text-slate-300 hover:text-white flex items-center justify-center transition"><i class="fa-solid fa-envelope"></i></a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Copyright -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-6 border-t border-slate-900 text-center text-slate-500">
+                جميع الحقوق محفوظة © منصة صَدَقَة للتبرعات الخيرية 2026.
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- 9. JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+    <!-- ================================================================ -->
+    <script src="script.js"></script>
+</body>
+</html>
